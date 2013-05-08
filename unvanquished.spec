@@ -31,6 +31,9 @@ BuildRequires:  pkgconfig(sdl)
 BuildRequires:  pkgconfig(speex)
 BuildRequires:  pkgconfig(theora)
 BuildRequires:  pkgconfig(vorbis)
+BuildRequires:  pkgconfig(glu)
+BuildRequires:  pkgconfig(gl)
+BuildRequires:  pkgconfig(glut)
 Requires:       opengl-games-utils
 Requires:       unvanquished-data == %{version}
 Requires:       unvanquished-maps == %{version}
