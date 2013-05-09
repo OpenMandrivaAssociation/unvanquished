@@ -36,7 +36,7 @@ BuildRequires:  pkgconfig(gl)
 BuildRequires:  pkgconfig(glut)
 Requires:       opengl-games-utils
 Requires:       unvanquished-data == %{version}
-Requires:       unvanquished-maps == %{version}
+Suggests:       unvanquished-maps == %{version}
 
 
 %description
