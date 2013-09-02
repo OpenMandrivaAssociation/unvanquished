@@ -22,7 +22,7 @@ BuildRequires:  pkgconfig(libcurl)
 BuildRequires:  pkgconfig(libpng12)
 %endif
 %if %{mdvver} >= 201210
-BuildRequires:  pkgconfig(libpng15)
+BuildRequires:  pkgconfig(libpng)
 %endif
 BuildRequires:  pkgconfig(libwebp)
 BuildRequires:  pkgconfig(nettle)
