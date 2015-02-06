@@ -3,7 +3,7 @@
 
 Name:           unvanquished
 Version:        0.15.0
-Release:        1
+Release:        2
 Summary:        Sci-fi RTS and FPS game
 License:        GPLv3
 Group:          Games/Arcade
