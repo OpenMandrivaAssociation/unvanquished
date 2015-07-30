@@ -1,2 +1,9 @@
-sources:
+removed_sources:
   unvanquished-0.15.0.tar.xz: c5757d76d0305d01b7b3a20834e36eec4aada5ea
+sources:
+  linux32-3.tar.bz2: 78ffa95a1c4a463046cbd105ac6652e4f10e078b
+  linux64-3.tar.bz2: 7b3a030497df1b91668feab7a485b6500186f3cd
+  pnacl-2.zip: aa881d85a7e081bcd55c15f2225f71109c5247cd
+  unvanquished-0.28.0.tar.xz: eb2485263ca2c76bbbea4c71ede93f037db4207f
+  unvanquished.png: d9022b5aee8ba0ab8b807ac1891154279a067087
+  v0.41.0.tar.gz: 8fd5b3b094e55d45c435fdc62669ddda680f5167

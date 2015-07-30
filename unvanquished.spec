@@ -1,42 +1,64 @@
-#define debug_package	%{nil}
-%define oname Unvanquished
+%define debug_package	%{nil}
+%define _service %{name}-server
+%define _service_user %{name}
+%define _service_home /var/lib/%{_service}
+# need this to avoid stripping 
+# witch causes failure at runtime with an IPC error.
+%global __os_install_post %{nil}
+%global __strip /bin/true
 
 Name:           unvanquished
-Version:        0.15.0
-Release:        2
+Version:        0.41.0
+Release:        1
 Summary:        Sci-fi RTS and FPS game
 License:        GPLv3
 Group:          Games/Arcade
 Url:            http://unvanquished.net/
-Source0:        http://unvanquished.net/downloads/sources/bloated/%{name}-%{version}.tar.xz
+Source:			https://github.com/Unvanquished/Unvanquished/archive/v%{version}.tar.gz
+# We should package google-NaCl separately ? Symbianflo
+Source1:                http://dl.unvanquished.net/deps/linux32-3.tar.bz2
+Source2:                http://dl.unvanquished.net/deps/linux64-3.tar.bz2
+#
+Source3:		http://dl.unvanquished.net/deps/pnacl-2.zip
+Source10:		%{name}-service.sh
+Source11:		server.cfg
+Source12:		maprotation.cfg
+Source13:		NOTES.txt
+Source100:              unvanquished.rpmlintrc
+
 BuildRequires:  cmake
+BuildRequires:  desktop-file-utils
+BuildRequires:  xz
 BuildRequires:  gcc-c++
 BuildRequires:  gmp-devel
 BuildRequires:  hicolor-icon-theme
-BuildRequires:  libjpeg-devel
-BuildRequires:  ncurses-devel
+BuildRequires:  pkgconfig(geoip)
+BuildRequires:  jpeg-devel
+BuildRequires:  tinyxml-devel
+BuildRequires:  pkgconfig(ncurses)
+BuildRequires:  bzip2-devel
+BuildRequires:  unzip
 BuildRequires:  pkgconfig(freetype2)
 BuildRequires:  pkgconfig(glew)
 BuildRequires:  pkgconfig(libcurl)
-%if %{mdvver} == 201200
-BuildRequires:  pkgconfig(libpng12)
-%endif
-%if %{mdvver} >= 201210
 BuildRequires:  pkgconfig(libpng)
-%endif
 BuildRequires:  pkgconfig(libwebp)
 BuildRequires:  pkgconfig(nettle)
 BuildRequires:  pkgconfig(openal)
-BuildRequires:  pkgconfig(sdl)
+BuildRequires:  pkgconfig(opus)
+BuildRequires:  pkgconfig(opusfile)
+BuildRequires:  pkgconfig(sdl2)
 BuildRequires:  pkgconfig(speex)
 BuildRequires:  pkgconfig(theora)
 BuildRequires:  pkgconfig(vorbis)
-BuildRequires:  pkgconfig(glu)
-BuildRequires:  pkgconfig(gl)
-BuildRequires:  pkgconfig(glut)
+
 Requires:       opengl-games-utils
-Requires:       unvanquished-data == %{version}
-Suggests:       unvanquished-maps == %{version}
+# those are circular , and suggested on the spec files
+# just because I'm not good in chain-build on abf.Symbianflo.
+Requires:       %{name}-data = %{version}
+Requires:       %{name}-maps
+Requires:       %{name}-service
+
 
 
 %description
@@ -55,80 +77,240 @@ and killing any remaining members of that team before they
 are able to build any more spawn points or the game timer ends.
 This package only contains the game engine.
 
+%files
+%doc GPL.txt COPYING.txt NOTES.txt
+%{_bindir}/*
+%{_libdir}/%{name}/
+%{_datadir}/applications/%{name}.desktop
+%{_datadir}/icons/hicolor/128x128/apps/%{name}.png
+#--------------------------------------------------------------
+# Service
+%package service
+Summary:        Run game server as a service
+Group:          Games/Arcade
+Requires:       %{name} >= %{version}
+
+%description service
+This package installs the files and config 
+to run a unvanquished server as a systemd service.
+
+** THIS IS A WORK IN PROGRESS - EXPERIMENTAL**
+ - Service control and monitoring still experimental.
+ - Connection to server instance's console not telnet'esque yet.
+	 
+%files service
+%doc NOTES.txt
+%config(noreplace)  /var/adm/fillup-templates/sysconfig.%{_service}
+%{_unitdir}/%{_service}.service
+%attr(750,%{_service_user},%{_service_user}) %dir %{_service_home}/
+%attr(750,%{_service_user},%{_service_user}) %dir %{_service_home}/config/
+%attr(750,%{_service_user},%{_service_user}) %dir %{_service_home}/game/
+%attr(750,%{_service_user},%{_service_user}) %dir %{_service_home}/pkg/
+%attr(0750,%{_service_user},%{_service_user}) %{_service_home}/%{name}-service.sh
+%attr(0750,%{_service_user},%{_service_user}) %{_service_home}/%{_service}-cmd
+%attr(0640,%{_service_user},%{_service_user}) %config(noreplace) %{_service_home}/config/server.cfg
+%attr(0640,%{_service_user},%{_service_user}) %config(noreplace) %{_service_home}/game/maprotation.cfg
+#--------------------------------------------------------------
+
 %prep
-%setup -q 
+%setup -qn Unvanquished-%{version}
 iconv -f iso8859-1 -t utf-8 GPL.txt > GPL.txt.conv && mv -f GPL.txt.conv GPL.txt
+# Google Native Client (NaCl)
+pushd external_deps
+%ifarch i586
+tar -xjvf %{SOURCE1}
+%endif
+%ifarch x86_64
+tar -xjvf %{SOURCE2}
+%endif
+unzip -o %{SOURCE3}
+popd
+
+mkdir -p build
 
 %build
-mkdir build
+
 cd build
-cmake -DCMAKE_INSTALL_PREFIX="%{_libdir}" \
-      -DCMAKE_INSTALL_BINDIR="%{_libdir}/%{oname}" \
-      -DCMAKE_INSTALL_LIBDIR="%{_libdir}/%{oname}" \
-      -DUSE_CURSES=0 \
-      -DUSE_CIN_XVID=0 \
-      -DUSE_INTERNAL_SDL=0 \
-      -DUSE_INTERNAL_CRYPTO=0 \
-      -DUSE_INTERNAL_JPEG=0 \
-      -DUSE_INTERNAL_SPEEX=0 \
-      -DUSE_INTERNAL_GLEW=0 \
-      ..
+
+cmake .. \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_SKIP_RPATH=ON \
+      -DBUILD_GAME_NATIVE_DLL=OFF \
+      -DBUILD_GAME_NATIVE_EXE=OFF \
+      -DBUILD_GAME_NACL=OFF
 
 %make
 
+
 %install
-# icons
-mkdir -p  %{buildroot}%{_datadir}/icons/hicolor/128x128/apps/
-install -Dm644 debian/unvanquished.png %{buildroot}%{_datadir}/icons/hicolor/128x128/apps/unvanquished.png
+# doc
+cp -a %{SOURCE13} ./
 
-# wrapper game
-mkdir -p %{buildroot}%{_bindir}
-cat >> %{buildroot}%{_bindir}/unvanquished.sh <<EOF
+# Icons
+install -Dm644 debian/%{name}.png %{buildroot}%{_datadir}/icons/hicolor/128x128/apps/%{name}.png
+
+# CLI
+mkdir command-ui
+pushd command-ui
+
+# game client wrapper
+# ----------------------
+cat >> %{name} <<EOF
 #!/bin/sh
-cd %{_libdir}/%{oname}
-exec %{_libdir}/%{oname}/daemon \
-	+set fs_libpath "%{_libdir}/%{oname}" \
-	+set fs_basepath "%{_datadir}/%{oname}" \
-	"$@"
-EOF
-chmod +x %{buildroot}%{_bindir}/unvanquished.sh
 
-#wrapper server
-cat >> %{buildroot}%{_bindir}/unvanquished-server.sh <<EOF
+app_args=''
+uri=''
+
+while [ \$# -gt 0 ]; do
+case "\$1" in
+    # handle URI unv:// passed in
+    unv://*)
+    	uri=\$(echo "\$1" | grep -o '^unv://[^[:space:]+;]*')
+    	app_args="\${app_args} +connect \${uri}"
+        ;;
+    *)
+    	app_args="\${app_args} \$1"
+        ;;
+esac
+shift
+done
+
+# Note: argument stucture changed in alpha 37: 
+#   -set <variable> <value> is now the preferred way to set a configuration variable.
+# 	+set <variable> <value> and +<command> are only applied after engine initialization.
+exec %{_libdir}/%{name}/daemon -libpath %{_libdir}/%{name} -pakpath %{_datadir}/%{name}/pkg \${app_args}
+EOF
+# ----------------------
+
+# game server wrapper
+# ----------------------
+cat >> %{name}-server <<EOF
 #!/bin/sh
-cd %{_libdir}/%{oname}
-exec %{_libdir}/%{name}/daemonded \
-	+set fs_libpath "%{_libdir}/%{oname}/" \
-	+set fs_basepath "%{_datadir}/%{oname}" \
-	"$@"
-EOF
-chmod +x %{buildroot}%{_bindir}/unvanquished-server.sh
 
+# Note: argument stucture changed in alpha 37: 
+#   -set <variable> <value> is now the preferred way to set a configuration variable.
+# 	+set <variable> <value> and +<command> are only applied after engine initialization.
+exec %{_libdir}/%{name}/daemonded -libpath %{_libdir}/%{name}/ -pakpath %{_datadir}/%{name}/pkg -curses "\$@"
+EOF
+# ----------------------
+# binary
+mkdir -p %{buildroot}%{_bindir}/
+install -m 755 %{name} %{name}-server %{buildroot}%{_bindir}/
+# ----------------------
 # menu entry
-mkdir -p %{buildroot}%{_datadir}/applications/
-cat >> %{buildroot}%{_datadir}/applications/unvanquished.desktop <<EOF
+cat >> %{name}.desktop <<EOF
 [Desktop Entry]
 Categories=Game;ActionGame;
-Name=%{name}
+Name=Unvanquished
 GenericName=sci-fi RTS and FPS mashup
 Type=Application
-Exec=unvanquished.sh
-Icon=unvanquished
-StartupNotify=true
+Exec=%{name}
+Icon=%{name}
+MimeType=x-scheme-handler/unv;
 EOF
-
-%makeinstall_std -C build
-
-chmod a+x %{buildroot}%{_libdir}/%{oname}/main/game.so
-chmod a+x %{buildroot}%{_libdir}/%{oname}/main/cgame.so
-chmod a+x %{buildroot}%{_libdir}/%{oname}/main/ui.so
+# ----------------------
+install -Dm 644 %{name}.desktop %{buildroot}%{_datadir}/applications/%{name}.desktop
 
 
-%files
-%doc GPL.txt COPYING.txt
-%{_bindir}/*
-%{_libdir}/%{oname}/
-%{_datadir}/applications/unvanquished.desktop
-%{_datadir}/icons/hicolor/128x128/apps/unvanquished.png
+# Server service
+# ----------------------
+cat >> %{_service}.conf <<EOF
+# Unvanquished Dedicated Server - Environment Config
+
+# Daemonded lib directory
+LIBPATH=%{_libdir}/%{name}
+
+# Server Store
+HOMEPATH=%{_service_home}
+
+# .pk3 Package Store - for installed game data and maps
+PAKPATH=%{_datadir}/%{name}/pkg
+
+# Startup Server Configuration
+EXEC=server.cfg
+EOF
+# ----------------------
+
+# For /etc/sysconfig/
+install -Dm 644 %{_service}.conf %{buildroot}/var/adm/fillup-templates/sysconfig.%{_service}
+
+install -Dm 750 %{SOURCE10} %{buildroot}%{_service_home}/%{name}-service.sh
+
+# Systemd service file
+# ----------------------
+cat >> %{_service}.service <<EOF
+[Unit]
+Description=Unvanquished Dedicated Server
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/sysconfig/%{_service}
+User=%{_service_user}
+Group=%{_service_user}
+ExecStart=%{_service_home}/%{name}-service.sh +exec \$EXEC
+ExecStop=%{_service_home}/%{name}-service.sh stop
+
+[Install]
+WantedBy=multi-user.target
+EOF
+# ----------------------
+install -Dm 644 %{_service}.service %{buildroot}%{_unitdir}/%{_service}.service
+
+# Administer the running service instance
+# ----------------------
+cat >> %{_service}-cmd <<EOF
+#!/bin/sh
+# Send command(s) to running daemonded instance started as a service
+#
+test -s /etc/sysconfig/%{_service} && . /etc/sysconfig/%{_service}
+
+service_state=\$(systemctl is-active %{_service}.service)
+if [ "\${service_state}" != "active" ]; then
+	echo "No active instance of %{_service}, Exiting."
+    exit 1
+fi
+
+# Administer running service instance - To send it commands.
+#   -homepath must be same as running instance
+exec %{_libdir}/%{name}/daemonded -libpath \$LIBPATH -pakpath \$PAKPATH -homepath \$HOMEPATH "\$@"
+
+EOF
+# ----------------------
+install -Dm 750 %{_service}-cmd %{buildroot}%{_service_home}/%{_service}-cmd
+
+#
+popd # command-ui
+
+# Service Home
+install -Dm 640 %{SOURCE11} %{buildroot}%{_service_home}/config/server.cfg
+install -Dm 640 %{SOURCE12} %{buildroot}%{_service_home}/game/maprotation.cfg
+install -d %{buildroot}%{_service_home}/pkg
+
+
+# == Binary Assets ==
+mkdir -p %{buildroot}%{_libdir}/%{name}/
+
+cd build
+
+# Application
+install -m 755 daemon daemonded daemon-tty %{buildroot}%{_libdir}/%{name}/
+
+# Helpers
+install -m 755 nacl_helper_bootstrap nacl_loader %{buildroot}%{_libdir}/%{name}/
+
+%ifarch i586
+install -m 755 irt_core-x86.nexe %{buildroot}%{_libdir}/%{name}/
+%endif
+%ifarch x86_64
+install -m 755 irt_core-x86_64.nexe %{buildroot}%{_libdir}/%{name}/
+%endif
+
+
+
+%pre service
+# Server Setup of User / Group
+getent group %{_service_user} >/dev/null || groupadd -r %{_service_user}
+getent passwd %{_service_user} >/dev/null || useradd -r -g %{_service_user} \
+	-d %{_service_home} -s /bin/false -c "Unvanquished Dedicated Server" %{_service_user}
 
 

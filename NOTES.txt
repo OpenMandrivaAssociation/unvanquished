@@ -1,0 +1,33 @@
+# NOTES
+# Unvanquished Game
+
+Website: 	http://www.unvanquished.net/
+Forums:		https://forums.unvanquished.net/
+Downloads:	http://dl.unvanquished.net/
+Code+bugs:	https://github.com/Unvanquished/Unvanquished/
+
+
+Packaging:
+	Program relies on NaCl (Google Native Client) and needs static game logic code to run inside a VM.
+    These files are required to exist along side application(game engine) binaries, to load VM and logic.
+        - nacl_helper_bootstrap 
+		- nacl_loader
+        - irt_core-x86_64.nexe
+        
+    Option exists to load the VM and game logic as configurable parameter to game engine:
+    	- set vm.cgame.type {0,1,2,3} : where 0 is default
+        	- 0: loads 'cgame-x86[_64].nexe' sourced and extracted from .pk3 data package (in -data rpm package)
+        	- 1: loads 'cgame-x86_64.nexe' from with in /usr/lib[64]/... directory
+            - 2: loads 'cgame-native-exe' from with in /usr/lib[64]/... directory
+            - 3: loads 'cgame-native-dll.so' from with in /usr/lib[64]/... directory
+      Proper package release is to rely on value '0', and not build other objects.
+      
+    'Stripping' of irt_core-x86_64.nexe is occuring on package assembly after build, which is causing error.
+    	- resolved by adding %global __os_install_post %{nil}
+							 %global __strip /bin/true into spec to disable this 'brp' script.
+        
+Running as Service:
+	User/Group: unvanquished
+    
+    Talking to background server:
+    	

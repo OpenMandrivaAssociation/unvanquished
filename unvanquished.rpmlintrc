@@ -1,0 +1,13 @@
+# NaCL are external
+addFilter("W: statically-linked-binary")
+# games group UID and server as service filters
+addFilter("W: non-standard-uid")
+addFilter("W: non-standard-gid")
+addFilter("E: non-standard-executable-perm")
+addFilter("E: non-standard-dir-perm")
+addFilter("E: non-readable")
+addFilter("W: FSSTND-dir-in-var")
+# need this to avoid failure at runtime with an IPC error
+# if is a way of a selective stripping, I don't know it
+# just irt_core-%arch.nexe need to be unstripped.symbianflo
+addFilter("E: unstripped-binary-or-object")
