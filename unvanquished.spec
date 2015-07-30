@@ -51,6 +51,7 @@ BuildRequires:  pkgconfig(sdl2)
 BuildRequires:  pkgconfig(speex)
 BuildRequires:  pkgconfig(theora)
 BuildRequires:  pkgconfig(vorbis)
+BuildRequires:	gcc-c++, gcc, gcc-cpp
 
 Requires:       opengl-games-utils
 # those are circular , and suggested on the spec files
@@ -129,6 +130,9 @@ popd
 mkdir -p build
 
 %build
+export CC=gcc
+export CXX=g++
+
 
 cd build
 
