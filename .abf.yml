@@ -1,9 +1,12 @@
 removed_sources:
-  unvanquished-0.15.0.tar.xz: c5757d76d0305d01b7b3a20834e36eec4aada5ea
-sources:
   linux32-3.tar.bz2: 78ffa95a1c4a463046cbd105ac6652e4f10e078b
   linux64-3.tar.bz2: 7b3a030497df1b91668feab7a485b6500186f3cd
   pnacl-2.zip: aa881d85a7e081bcd55c15f2225f71109c5247cd
-  unvanquished-0.28.0.tar.xz: eb2485263ca2c76bbbea4c71ede93f037db4207f
+  unvanquished-0.15.0.tar.xz: c5757d76d0305d01b7b3a20834e36eec4aada5ea
+sources:
+  CBSE-Toolchain-1d62124.zip: 427f5b985cd83d127e15bb28bc2e092e23053585
+  Unvanquished-0.47.0.tar.gz: 178afea5479cbbf12a6128c7928bb9bd422c3563
+  linux32-4.tar.bz2: b6fd89f7e9998835a18c6478b923d989542ca5c9
+  linux64-4.tar.bz2: faf94dc4a5c6e7b4a1c4a162b4d16f9e3cc31452
+  pnacl-3.zip: 72181e89edeb772d69f1f85c6ea4c231a9a1ce3c
   unvanquished.png: d9022b5aee8ba0ab8b807ac1891154279a067087
-  v0.41.0.tar.gz: 8fd5b3b094e55d45c435fdc62669ddda680f5167

@@ -8,18 +8,20 @@
 %global __strip /bin/true
 
 Name:           unvanquished
-Version:        0.41.0
+Version:        0.47.0
 Release:        1
 Summary:        Sci-fi RTS and FPS game
 License:        GPLv3
 Group:          Games/Arcade
 Url:            http://unvanquished.net/
-Source:			https://github.com/Unvanquished/Unvanquished/archive/v%{version}.tar.gz
+Source:			https://github.com/Unvanquished/Unvanquished/archive/Unvanquished-%{version}.tar.gz
 # We should package google-NaCl separately ? Symbianflo
-Source1:                http://dl.unvanquished.net/deps/linux32-3.tar.bz2
-Source2:                http://dl.unvanquished.net/deps/linux64-3.tar.bz2
+Source1:                http://dl.unvanquished.net/deps/linux32-4.tar.bz2
+Source2:                http://dl.unvanquished.net/deps/linux64-4.tar.bz2
 #
-Source3:		http://dl.unvanquished.net/deps/pnacl-2.zip
+Source3:		http://dl.unvanquished.net/deps/pnacl-3.zip
+# cbse required but not included in tarball
+Source4:		CBSE-Toolchain-1d62124.zip
 Source10:		%{name}-service.sh
 Source11:		server.cfg
 Source12:		maprotation.cfg
@@ -51,6 +53,9 @@ BuildRequires:  pkgconfig(sdl2)
 BuildRequires:  pkgconfig(speex)
 BuildRequires:  pkgconfig(theora)
 BuildRequires:  pkgconfig(vorbis)
+BuildRequires:	python
+BuildRequires:	python-yaml
+BuildRequires:	python-jinja2
 BuildRequires:	gcc-c++, gcc, gcc-cpp
 
 Requires:       opengl-games-utils
@@ -117,7 +122,7 @@ to run a unvanquished server as a systemd service.
 %setup -qn Unvanquished-%{version}
 iconv -f iso8859-1 -t utf-8 GPL.txt > GPL.txt.conv && mv -f GPL.txt.conv GPL.txt
 # Google Native Client (NaCl)
-pushd external_deps
+pushd daemon/external_deps
 %ifarch i586
 tar -xjvf %{SOURCE1}
 %endif
@@ -126,6 +131,12 @@ tar -xjvf %{SOURCE2}
 %endif
 unzip -o %{SOURCE3}
 popd
+
+pushd src/utils/cbse/
+unzip %{SOURCE4}
+mv CBSE-Toolchain-*/* .
+popd
+
 
 mkdir -p build
 
