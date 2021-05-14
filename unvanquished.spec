@@ -7,65 +7,61 @@
 %global __os_install_post %{nil}
 %global __strip /bin/true
 
-Name:           unvanquished
-Version:        0.47.0
-Release:        1
-Summary:        Sci-fi RTS and FPS game
-License:        GPLv3
-Group:          Games/Arcade
-Url:            http://unvanquished.net/
-Source:			https://github.com/Unvanquished/Unvanquished/archive/Unvanquished-%{version}.tar.gz
+Summary:	Sci-fi RTS and FPS game
+Name:		unvanquished
+Version:	0.52.0
+Release:	1
+License:	GPLv3
+Group:		Games/Arcade
+Url:		http://unvanquished.net/
+Source:		https://github.com/Unvanquished/Unvanquished/archive/Unvanquished-%{version}.tar.gz
 # We should package google-NaCl separately ? Symbianflo
-Source1:                http://dl.unvanquished.net/deps/linux32-4.tar.bz2
-Source2:                http://dl.unvanquished.net/deps/linux64-4.tar.bz2
+Source1:	http://dl.unvanquished.net/deps/linux32-4.tar.bz2
+Source2:	http://dl.unvanquished.net/deps/linux64-4.tar.bz2
 #
-Source3:		http://dl.unvanquished.net/deps/pnacl-3.zip
+Source3:	http://dl.unvanquished.net/deps/pnacl-3.zip
 # cbse required but not included in tarball
-Source4:		CBSE-Toolchain-1d62124.zip
-Source10:		%{name}-service.sh
-Source11:		server.cfg
-Source12:		maprotation.cfg
-Source13:		NOTES.txt
-Source100:              unvanquished.rpmlintrc
+Source4:	CBSE-Toolchain-1d62124.zip
+Source10:	%{name}-service.sh
+Source11:	server.cfg
+Source12:	maprotation.cfg
+Source13:	NOTES.txt
+Source100:	unvanquished.rpmlintrc
 
-BuildRequires:  cmake
-BuildRequires:  desktop-file-utils
-BuildRequires:  xz
-BuildRequires:  gcc-c++
-BuildRequires:  gmp-devel
-BuildRequires:  hicolor-icon-theme
-BuildRequires:  pkgconfig(geoip)
-BuildRequires:  jpeg-devel
-BuildRequires:  tinyxml-devel
-BuildRequires:  pkgconfig(ncurses)
-BuildRequires:  bzip2-devel
-BuildRequires:  unzip
-BuildRequires:  pkgconfig(freetype2)
-BuildRequires:  pkgconfig(glew)
-BuildRequires:  pkgconfig(libcurl)
-BuildRequires:  pkgconfig(libpng)
-BuildRequires:  pkgconfig(libwebp)
-BuildRequires:  pkgconfig(nettle)
-BuildRequires:  pkgconfig(openal)
-BuildRequires:  pkgconfig(opus)
-BuildRequires:  pkgconfig(opusfile)
-BuildRequires:  pkgconfig(sdl2)
-BuildRequires:  pkgconfig(speex)
-BuildRequires:  pkgconfig(theora)
-BuildRequires:  pkgconfig(vorbis)
+BuildRequires:	cmake
+BuildRequires:	desktop-file-utils
+BuildRequires:	xz
+BuildRequires:	gmp-devel
+BuildRequires:	hicolor-icon-theme
+BuildRequires:	pkgconfig(geoip)
+BuildRequires:	pkgconfig(libjpeg)
+BuildRequires:	tinyxml-devel
+BuildRequires:	pkgconfig(ncurses)
+BuildRequires:	bzip2-devel
+BuildRequires:	unzip
+BuildRequires:	pkgconfig(freetype2)
+BuildRequires:	pkgconfig(glew)
+BuildRequires:	pkgconfig(libcurl)
+BuildRequires:	pkgconfig(libpng)
+BuildRequires:	pkgconfig(libwebp)
+BuildRequires:	pkgconfig(nettle)
+BuildRequires:	pkgconfig(openal)
+BuildRequires:	pkgconfig(opus)
+BuildRequires:	pkgconfig(opusfile)
+BuildRequires:	pkgconfig(sdl2)
+BuildRequires:	pkgconfig(speex)
+BuildRequires:	pkgconfig(theora)
+BuildRequires:	pkgconfig(vorbis)
 BuildRequires:	python
 BuildRequires:	python-yaml
 BuildRequires:	python-jinja2
-BuildRequires:	gcc-c++, gcc, gcc-cpp
 
-Requires:       opengl-games-utils
+Requires:	opengl-games-utils
 # those are circular , and suggested on the spec files
 # just because I'm not good in chain-build on abf.Symbianflo.
-Requires:       %{name}-data = %{version}
-Requires:       %{name}-maps
-Requires:       %{name}-service
-
-
+Requires:	%{name}-data = %{version}
+Requires:	%{name}-maps
+Requires:	%{name}-service
 
 %description
 Players fight online in team based combat in a war of aliens against humans.
@@ -91,10 +87,11 @@ This package only contains the game engine.
 %{_datadir}/icons/hicolor/128x128/apps/%{name}.png
 #--------------------------------------------------------------
 # Service
+
 %package service
-Summary:        Run game server as a service
-Group:          Games/Arcade
-Requires:       %{name} >= %{version}
+Summary:	Run game server as a service
+Group:		Games/Arcade
+Requires:	%{name} >= %{version}
 
 %description service
 This package installs the files and config 
@@ -103,7 +100,7 @@ to run a unvanquished server as a systemd service.
 ** THIS IS A WORK IN PROGRESS - EXPERIMENTAL**
  - Service control and monitoring still experimental.
  - Connection to server instance's console not telnet'esque yet.
-	 
+
 %files service
 %doc NOTES.txt
 %config(noreplace)  /var/adm/fillup-templates/sysconfig.%{_service}
@@ -137,25 +134,17 @@ unzip %{SOURCE4}
 mv CBSE-Toolchain-*/* .
 popd
 
-
 mkdir -p build
 
 %build
-export CC=gcc
-export CXX=g++
-
-
-cd build
-
-cmake .. \
+%cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_SKIP_RPATH=ON \
       -DBUILD_GAME_NATIVE_DLL=OFF \
       -DBUILD_GAME_NATIVE_EXE=OFF \
       -DBUILD_GAME_NACL=OFF
 
-%make
-
+%make_build
 
 %install
 # doc
@@ -320,12 +309,8 @@ install -m 755 irt_core-x86.nexe %{buildroot}%{_libdir}/%{name}/
 install -m 755 irt_core-x86_64.nexe %{buildroot}%{_libdir}/%{name}/
 %endif
 
-
-
 %pre service
 # Server Setup of User / Group
 getent group %{_service_user} >/dev/null || groupadd -r %{_service_user}
 getent passwd %{_service_user} >/dev/null || useradd -r -g %{_service_user} \
 	-d %{_service_home} -s /bin/false -c "Unvanquished Dedicated Server" %{_service_user}
-
-
