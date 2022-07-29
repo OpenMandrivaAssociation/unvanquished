@@ -117,7 +117,7 @@ to run a unvanquished server as a systemd service.
 
 %prep
 %setup -qn Unvanquished-%{version}
-iconv -f iso8859-1 -t utf-8 GPL.txt > GPL.txt.conv && mv -f GPL.txt.conv GPL.txt
+#iconv -f iso8859-1 -t utf-8 GPL.txt > GPL.txt.conv && mv -f GPL.txt.conv GPL.txt
 # Google Native Client (NaCl)
 pushd daemon/external_deps
 %ifarch i586
