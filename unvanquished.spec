@@ -9,24 +9,24 @@
 
 Summary:	Sci-fi RTS and FPS game
 Name:		unvanquished
-Version:	0.52.0
+Version:	0.53.0
 Release:	1
 License:	GPLv3
 Group:		Games/Arcade
 Url:		http://unvanquished.net/
 Source:		https://github.com/Unvanquished/Unvanquished/archive/Unvanquished-%{version}.tar.gz
 # We should package google-NaCl separately ? Symbianflo
-Source1:	http://dl.unvanquished.net/deps/linux32-4.tar.bz2
-Source2:	http://dl.unvanquished.net/deps/linux64-4.tar.bz2
+#Source1:	http://dl.unvanquished.net/deps/linux32-4.tar.bz2
+#Source2:	http://dl.unvanquished.net/deps/linux64-4.tar.bz2
 #
-Source3:	http://dl.unvanquished.net/deps/pnacl-3.zip
+#Source3:	http://dl.unvanquished.net/deps/pnacl-3.zip
 # cbse required but not included in tarball
-Source4:	CBSE-Toolchain-1d62124.zip
-Source10:	%{name}-service.sh
-Source11:	server.cfg
-Source12:	maprotation.cfg
-Source13:	NOTES.txt
-Source100:	unvanquished.rpmlintrc
+#Source4:	CBSE-Toolchain-1d62124.zip
+#Source10:	%{name}-service.sh
+#Source11:	server.cfg
+#Source12:	maprotation.cfg
+#Source13:	NOTES.txt
+#Source100:	unvanquished.rpmlintrc
 
 BuildRequires:	cmake
 BuildRequires:	desktop-file-utils
@@ -119,23 +119,23 @@ to run a unvanquished server as a systemd service.
 %setup -qn Unvanquished-%{version}
 #iconv -f iso8859-1 -t utf-8 GPL.txt > GPL.txt.conv && mv -f GPL.txt.conv GPL.txt
 # Google Native Client (NaCl)
-pushd daemon/external_deps
-%ifarch i586
-tar -xjvf %{SOURCE1}
-%endif
-%ifarch x86_64
-tar -xjvf %{SOURCE2}
-%endif
-unzip -o %{SOURCE3}
-popd
+#pushd daemon/external_deps
+#ifarch i586
+#tar -xjvf %{SOURCE1}
+#endif
+#ifarch x86_64
+#tar -xjvf %{SOURCE2}
+#endif
+#unzip -o %{SOURCE3}
+#popd
 
-pushd src/utils/cbse/
-unzip %{SOURCE4}
-mv CBSE-Toolchain-*/* .
-popd
-
-mkdir -p build
-
+#pushd src/utils/cbse/
+#unzip %{SOURCE4}
+#mv CBSE-Toolchain-*/* .
+#popd
+#
+#mkdir -p build
+#
 %build
 %cmake \
       -DCMAKE_BUILD_TYPE=Release \
@@ -148,169 +148,169 @@ mkdir -p build
 
 %install
 # doc
-cp -a %{SOURCE13} ./
-
+#cp -a %{SOURCE13} ./
+#
 # Icons
-install -Dm644 debian/%{name}.png %{buildroot}%{_datadir}/icons/hicolor/128x128/apps/%{name}.png
-
+#install -Dm644 debian/%{name}.png %{buildroot}%{_datadir}/icons/hicolor/128x128/apps/%{name}.png
+#
 # CLI
-mkdir command-ui
-pushd command-ui
-
+#mkdir command-ui
+#pushd command-ui
+#
 # game client wrapper
 # ----------------------
-cat >> %{name} <<EOF
+#cat >> %{name} <<EOF
 #!/bin/sh
+#
+#app_args=''
+#uri=''
 
-app_args=''
-uri=''
-
-while [ \$# -gt 0 ]; do
-case "\$1" in
-    # handle URI unv:// passed in
-    unv://*)
-    	uri=\$(echo "\$1" | grep -o '^unv://[^[:space:]+;]*')
-    	app_args="\${app_args} +connect \${uri}"
-        ;;
-    *)
-    	app_args="\${app_args} \$1"
-        ;;
-esac
-shift
-done
+#while [ \$# -gt 0 ]; do
+#case "\$1" in
+#    # handle URI unv:// passed in
+#    unv://*)
+#    	uri=\$(echo "\$1" | grep -o '^unv://[^[:space:]+;]*')
+#    	app_args="\${app_args} +connect \${uri}"
+#        ;;
+#    *)
+#    	app_args="\${app_args} \$1"
+#        ;;
+#esac
+#shift
+#done
 
 # Note: argument stucture changed in alpha 37: 
 #   -set <variable> <value> is now the preferred way to set a configuration variable.
 # 	+set <variable> <value> and +<command> are only applied after engine initialization.
-exec %{_libdir}/%{name}/daemon -libpath %{_libdir}/%{name} -pakpath %{_datadir}/%{name}/pkg \${app_args}
-EOF
+#exec %{_libdir}/%{name}/daemon -libpath %{_libdir}/%{name} -pakpath %{_datadir}/%{name}/pkg \${app_args}
+#EOF
 # ----------------------
-
+#
 # game server wrapper
 # ----------------------
-cat >> %{name}-server <<EOF
+#cat >> %{name}-server <<EOF
 #!/bin/sh
-
+#
 # Note: argument stucture changed in alpha 37: 
 #   -set <variable> <value> is now the preferred way to set a configuration variable.
 # 	+set <variable> <value> and +<command> are only applied after engine initialization.
-exec %{_libdir}/%{name}/daemonded -libpath %{_libdir}/%{name}/ -pakpath %{_datadir}/%{name}/pkg -curses "\$@"
-EOF
+#exec %{_libdir}/%{name}/daemonded -libpath %{_libdir}/%{name}/ -pakpath %{_datadir}/%{name}/pkg -curses "\$@"
+#EOF
 # ----------------------
 # binary
-mkdir -p %{buildroot}%{_bindir}/
-install -m 755 %{name} %{name}-server %{buildroot}%{_bindir}/
+#mkdir -p %{buildroot}%{_bindir}/
+#install -m 755 %{name} %{name}-server %{buildroot}%{_bindir}/
 # ----------------------
 # menu entry
-cat >> %{name}.desktop <<EOF
-[Desktop Entry]
-Categories=Game;ActionGame;
-Name=Unvanquished
-GenericName=sci-fi RTS and FPS mashup
-Type=Application
-Exec=%{name}
-Icon=%{name}
-MimeType=x-scheme-handler/unv;
-EOF
+#cat >> %{name}.desktop <<EOF
+#[Desktop Entry]
+#Categories=Game;ActionGame;
+#Name=Unvanquished
+#GenericName=sci-fi RTS and FPS mashup
+#Type=Application
+#Exec=%{name}
+#Icon=%{name}
+#MimeType=x-scheme-handler/unv;
+#EOF
 # ----------------------
-install -Dm 644 %{name}.desktop %{buildroot}%{_datadir}/applications/%{name}.desktop
+#install -Dm 644 %{name}.desktop %{buildroot}%{_datadir}/applications/%{name}.desktop
 
 
 # Server service
 # ----------------------
-cat >> %{_service}.conf <<EOF
+#cat >> %{_service}.conf <<EOF
 # Unvanquished Dedicated Server - Environment Config
 
 # Daemonded lib directory
-LIBPATH=%{_libdir}/%{name}
+#LIBPATH=%{_libdir}/%{name}
 
 # Server Store
-HOMEPATH=%{_service_home}
-
+#HOMEPATH=%{_service_home}
+#
 # .pk3 Package Store - for installed game data and maps
-PAKPATH=%{_datadir}/%{name}/pkg
+#PAKPATH=%{_datadir}/%{name}/pkg
 
 # Startup Server Configuration
-EXEC=server.cfg
-EOF
+#EXEC=server.cfg
+#EOF
 # ----------------------
 
 # For /etc/sysconfig/
-install -Dm 644 %{_service}.conf %{buildroot}/var/adm/fillup-templates/sysconfig.%{_service}
-
-install -Dm 750 %{SOURCE10} %{buildroot}%{_service_home}/%{name}-service.sh
-
+#install -Dm 644 %{_service}.conf %{buildroot}/var/adm/fillup-templates/sysconfig.%{_service}
+#
+#install -Dm 750 %{SOURCE10} %{buildroot}%{_service_home}/%{name}-service.sh
+#
 # Systemd service file
 # ----------------------
-cat >> %{_service}.service <<EOF
-[Unit]
-Description=Unvanquished Dedicated Server
-After=network.target
-
-[Service]
-EnvironmentFile=/etc/sysconfig/%{_service}
-User=%{_service_user}
-Group=%{_service_user}
-ExecStart=%{_service_home}/%{name}-service.sh +exec \$EXEC
-ExecStop=%{_service_home}/%{name}-service.sh stop
-
-[Install]
-WantedBy=multi-user.target
-EOF
+#cat >> %{_service}.service <<EOF
+#[Unit]
+#Description=Unvanquished Dedicated Server
+#After=network.target
+#
+#[Service]
+#EnvironmentFile=/etc/sysconfig/%{_service}
+#User=%{_service_user}
+#Group=%{_service_user}
+#ExecStart=%{_service_home}/%{name}-service.sh +exec \$EXEC
+#ExecStop=%{_service_home}/%{name}-service.sh stop
+#
+#[Install]
+#WantedBy=multi-user.target
+#EOF
 # ----------------------
-install -Dm 644 %{_service}.service %{buildroot}%{_unitdir}/%{_service}.service
-
+#install -Dm 644 %{_service}.service %{buildroot}%{_unitdir}/%{_service}.service
+#
 # Administer the running service instance
 # ----------------------
-cat >> %{_service}-cmd <<EOF
+#cat >> %{_service}-cmd <<EOF
 #!/bin/sh
 # Send command(s) to running daemonded instance started as a service
 #
-test -s /etc/sysconfig/%{_service} && . /etc/sysconfig/%{_service}
-
-service_state=\$(systemctl is-active %{_service}.service)
-if [ "\${service_state}" != "active" ]; then
-	echo "No active instance of %{_service}, Exiting."
-    exit 1
-fi
-
+#test -s /etc/sysconfig/%{_service} && . /etc/sysconfig/%{_service}
+#
+#service_state=\$(systemctl is-active %{_service}.service)
+#if [ "\${service_state}" != "active" ]; then
+#	echo "No active instance of %{_service}, Exiting."
+#    exit 1
+#fi
+#
 # Administer running service instance - To send it commands.
 #   -homepath must be same as running instance
-exec %{_libdir}/%{name}/daemonded -libpath \$LIBPATH -pakpath \$PAKPATH -homepath \$HOMEPATH "\$@"
-
-EOF
+#exec %{_libdir}/%{name}/daemonded -libpath \$LIBPATH -pakpath \$PAKPATH -homepath \$HOMEPATH "\$@"
+#
+#EOF
 # ----------------------
-install -Dm 750 %{_service}-cmd %{buildroot}%{_service_home}/%{_service}-cmd
+#install -Dm 750 %{_service}-cmd %{buildroot}%{_service_home}/%{_service}-cmd
 
 #
-popd # command-ui
+#popd # command-ui
 
 # Service Home
-install -Dm 640 %{SOURCE11} %{buildroot}%{_service_home}/config/server.cfg
-install -Dm 640 %{SOURCE12} %{buildroot}%{_service_home}/game/maprotation.cfg
-install -d %{buildroot}%{_service_home}/pkg
-
+#install -Dm 640 %{SOURCE11} %{buildroot}%{_service_home}/config/server.cfg
+#install -Dm 640 %{SOURCE12} %{buildroot}%{_service_home}/game/maprotation.cfg
+#install -d %{buildroot}%{_service_home}/pkg
+#
 
 # == Binary Assets ==
-mkdir -p %{buildroot}%{_libdir}/%{name}/
+#mkdir -p %{buildroot}%{_libdir}/%{name}/
 
-cd build
+#cd build
 
 # Application
-install -m 755 daemon daemonded daemon-tty %{buildroot}%{_libdir}/%{name}/
-
+#install -m 755 daemon daemonded daemon-tty %{buildroot}%{_libdir}/%{name}/
+#
 # Helpers
-install -m 755 nacl_helper_bootstrap nacl_loader %{buildroot}%{_libdir}/%{name}/
+#install -m 755 nacl_helper_bootstrap nacl_loader %{buildroot}%{_libdir}/%{name}/
+#
+#ifarch i586
+#install -m 755 irt_core-x86.nexe %{buildroot}%{_libdir}/%{name}/
+#endif
+#ifarch x86_64
+#install -m 755 irt_core-x86_64.nexe %{buildroot}%{_libdir}/%{name}/
+#endif
 
-%ifarch i586
-install -m 755 irt_core-x86.nexe %{buildroot}%{_libdir}/%{name}/
-%endif
-%ifarch x86_64
-install -m 755 irt_core-x86_64.nexe %{buildroot}%{_libdir}/%{name}/
-%endif
-
-%pre service
+#pre service
 # Server Setup of User / Group
-getent group %{_service_user} >/dev/null || groupadd -r %{_service_user}
-getent passwd %{_service_user} >/dev/null || useradd -r -g %{_service_user} \
-	-d %{_service_home} -s /bin/false -c "Unvanquished Dedicated Server" %{_service_user}
+#getent group %{_service_user} >/dev/null || groupadd -r %{_service_user}
+#getent passwd %{_service_user} >/dev/null || useradd -r -g %{_service_user} \
+#	-d %{_service_home} -s /bin/false -c "Unvanquished Dedicated Server" %{_service_user}
