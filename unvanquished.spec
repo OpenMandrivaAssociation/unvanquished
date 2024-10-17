@@ -13,7 +13,7 @@ Version:	0.52.0
 Release:	1
 License:	GPLv3
 Group:		Games/Arcade
-Url:		http://unvanquished.net/
+Url:		https://unvanquished.net/
 Source:		https://github.com/Unvanquished/Unvanquished/archive/Unvanquished-%{version}.tar.gz
 # We should package google-NaCl separately ? Symbianflo
 Source1:	http://dl.unvanquished.net/deps/linux32-4.tar.bz2
